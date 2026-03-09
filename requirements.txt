@@ -3,3 +3,4 @@ google-auth-oauthlib
 moviepy
 gtts
 requests
+Pillow
