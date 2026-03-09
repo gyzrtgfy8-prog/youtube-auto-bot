@@ -1,18 +1,39 @@
-from moviepy.editor import TextClip, CompositeVideoClip
-from gtts import gTTS
 import os
+import google_auth_oauthlib.flow
+import googleapiclient.discovery
+import googleapiclient.errors
 
-text = "Welcome to my AI channel"
+scopes = ["https://www.googleapis.com/auth/youtube.upload"]
 
-# create voice
-tts = gTTS(text)
-tts.save("voice.mp3")
+api_service_name = "youtube"
+api_version = "v3"
 
-# create video
-clip = TextClip(text, fontsize=70, color='white', size=(1080,1920))
-clip = clip.set_duration(5)
+flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(
+    "credentials.json", scopes)
 
-video = CompositeVideoClip([clip])
-video.write_videofile("video.mp4", fps=24)
+credentials = flow.run_console()
 
-print("Video created")
+youtube = googleapiclient.discovery.build(
+    api_service_name, api_version, credentials=credentials)
+
+request_body = {
+    "snippet": {
+        "categoryId": "22",
+        "title": "My AI Generated Video",
+        "description": "Uploaded automatically",
+        "tags": ["ai", "automation", "youtube bot"]
+    },
+    "status": {
+        "privacyStatus": "public"
+    }
+}
+
+request = youtube.videos().insert(
+    part="snippet,status",
+    body=request_body,
+    media_body="video.mp4"
+)
+
+response = request.execute()
+
+print("Video uploaded!")
